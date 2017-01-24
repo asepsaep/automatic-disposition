@@ -3,7 +3,7 @@ package trainer
 import akka.actor.{ Actor, ActorLogging, ActorRef, Props }
 import akka.camel.{ CamelMessage, Consumer, Oneway, Producer }
 import com.typesafe.config.{ Config, ConfigFactory }
-import model.{ BuildModelRequest, Ticket }
+import model.{ BuildModelRequest, Ticket, TicketSummary }
 import org.apache.spark.SparkContext
 import org.apache.spark.ml.{ Model, Pipeline, Transformer }
 import org.apache.spark.ml.classification.NaiveBayes
@@ -42,7 +42,7 @@ class ModelBuilder(sparkContext: SparkContext, sparkSession: SparkSession, model
       modelBuilderHub ! CamelMessage(model, Map(CamelMessage.MessageExchangeId → "NewModel"))
   }
 
-  protected def initializeDataset(): Dataset[Ticket] = {
+  protected def initializeDataset(): Dataset[TicketSummary] = {
     val dbUrl = config.as[String]("db.ticket.url")
     val dbTable = config.as[String]("db.ticket.table")
     val dbUser = config.as[String]("db.ticket.user")
@@ -51,14 +51,14 @@ class ModelBuilder(sparkContext: SparkContext, sparkSession: SparkSession, model
     val opts = Map("url" → s"$dbUrl?user=$dbUser&password=$dbPassword", "dbtable" → dbTable, "driver" → "org.postgresql.Driver")
     val df = sqlContext.read.format("jdbc").options(opts).load()
     val dataset = df.map {
-      case row ⇒ Ticket(row.getAs[String]("description"), row.getAs[String]("assignee"))
+      case row ⇒ TicketSummary(row.getAs[String]("description"), row.getAs[String]("assignee"))
     }
 
     dataset
 
   }
 
-  protected def buildModel(corpus: Dataset[Ticket]): Transformer = {
+  protected def buildModel(corpus: Dataset[TicketSummary]): Transformer = {
     val data = corpus.map(t ⇒ (t.description, t.assignee)).toDF("description", "assignee")
 
     val indexer = new StringIndexer().setInputCol("assignee").setOutputCol("label").fit(data)

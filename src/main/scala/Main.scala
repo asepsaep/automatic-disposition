@@ -41,7 +41,19 @@ object Main extends App {
     Thread.sleep(60000)
   }
 
-  ticketSender ! CamelMessage(Ticket("proses pengerjaan trotoar masih belum selesai sangat mengganggu", ""), Map(CamelMessage.MessageExchangeId → "NewTicket"))
+  val ticket = Ticket(
+    id = Some(1),
+    reporter = None,
+    assignee = None,
+    assigneeName = None,
+    status = None,
+    priority = None,
+    title = None,
+    description = Some("pungli sekolah"),
+    resolution = None
+  )
+
+  ticketSender ! CamelMessage(ticket, Map(CamelMessage.MessageExchangeId → "NewTicket"))
   Thread.sleep(1000)
 
 }
