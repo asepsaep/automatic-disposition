@@ -1,3 +1,3 @@
-package model
+package models
 
 case class BuildModelRequest()

@@ -1,8 +1,8 @@
-package model
+package models
 
 import java.time.OffsetDateTime
 
-import util.Preprocessor
+import utils.Preprocessor
 
 case class Ticket(
   id: Option[Long],

@@ -1,4 +1,4 @@
-package util
+package utils
 
 import com.typesafe.config.{ Config, ConfigFactory }
 import org.apache.spark.sql.SparkSession

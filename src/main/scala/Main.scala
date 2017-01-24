@@ -2,14 +2,14 @@ import java.io.File
 
 import akka.actor.{ ActorSystem, Props }
 import akka.camel.{ CamelExtension, CamelMessage, Oneway, Producer }
-import classifier.Classifier
+import classifier.{ Classifier, ClassifierHub }
 import com.typesafe.config.{ Config, ConfigFactory }
-import model.{ BuildModelRequest, Ticket }
+import models.{ BuildModelRequest, Ticket }
 import org.apache.activemq.camel.component.ActiveMQComponent
 import org.apache.spark.ml.tuning.CrossValidatorModel
 import net.ceedubs.ficus.Ficus._
 import trainer.{ ModelBuilder, ModelBuilderHub }
-import util.SparkModule._
+import utils.SparkModule._
 
 object Main extends App {
 
@@ -22,7 +22,8 @@ object Main extends App {
   val modelBuilderHub = system.actorOf(Props[ModelBuilderHub])
   val modelBuilder = system.actorOf(ModelBuilder.props(sparkContext, sparkSession, modelBuilderHub))
 
-  val classifier = system.actorOf(Classifier.props(sparkContext, sparkSession))
+  val classifierHub = system.actorOf(Props[ClassifierHub])
+  val classifier = system.actorOf(Classifier.props(sparkContext, sparkSession, classifierHub))
 
   val buildproducer = system.actorOf(Props[BuildProducer])
   val ticketSender = system.actorOf(Props[TicketSender])

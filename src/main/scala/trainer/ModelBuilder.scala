@@ -3,7 +3,7 @@ package trainer
 import akka.actor.{ Actor, ActorLogging, ActorRef, Props }
 import akka.camel.{ CamelMessage, Consumer, Oneway, Producer }
 import com.typesafe.config.{ Config, ConfigFactory }
-import model.{ BuildModelRequest, Ticket, TicketSummary }
+import models.{ BuildModelRequest, Ticket, TicketSummary }
 import org.apache.spark.SparkContext
 import org.apache.spark.ml.{ Model, Pipeline, Transformer }
 import org.apache.spark.ml.classification.NaiveBayes
@@ -55,7 +55,6 @@ class ModelBuilder(sparkContext: SparkContext, sparkSession: SparkSession, model
     }
 
     dataset
-
   }
 
   protected def buildModel(corpus: Dataset[TicketSummary]): Transformer = {

@@ -65,7 +65,7 @@ lazy val SubsistemDisposisiOtomatis = (project in file("."))
       "com.iheart" %% "ficus" % versions.ficus,
       "org.slf4j" % "slf4j-api" % versions.slf4j,
       "ch.qos.logback" % "logback-classic" % versions.logback
-    )
+    ).map(_.exclude("org.slf4j", "slf4j-log4j12"))
   ).enablePlugins(SbtScalariform)
 
 lazy val jvmOptions = Seq(

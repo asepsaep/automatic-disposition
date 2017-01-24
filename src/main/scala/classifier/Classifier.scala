@@ -1,20 +1,20 @@
 package classifier
 
-import akka.actor.{ Actor, Props }
+import akka.actor.{ Actor, ActorRef, Props }
 import akka.actor.Actor.Receive
-import akka.camel.{ CamelMessage, Consumer }
-import model.{ Ticket, TicketProbability }
+import akka.camel.{ CamelMessage, Consumer, Oneway, Producer }
+import models.{ Ticket, TicketProbability }
 import org.apache.spark.SparkContext
 import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.linalg.DenseVector
 import org.apache.spark.sql.{ Row, SparkSession }
-import util.Preprocessor
+import utils.Preprocessor
 
 object Classifier {
-  def props(sparkContext: SparkContext, sparkSession: SparkSession) = Props(new Classifier(sparkContext, sparkSession))
+  def props(sparkContext: SparkContext, sparkSession: SparkSession, classifierHub: ActorRef) = Props(new Classifier(sparkContext, sparkSession, classifierHub))
 }
 
-class Classifier(sparkContext: SparkContext, sparkSession: SparkSession) extends Actor with Consumer {
+class Classifier(sparkContext: SparkContext, sparkSession: SparkSession, classifierHub: ActorRef) extends Actor with Consumer {
 
   val sqlContext = sparkSession.sqlContext
   import sqlContext.implicits._
@@ -32,8 +32,10 @@ class Classifier(sparkContext: SparkContext, sparkSession: SparkSession) extends
           case Row(description: String, predictionLabel: String, probability: DenseVector, prediction: Double) ⇒
             TicketProbability(ticket.copy(assignee = Some(predictionLabel)), probability.values(prediction.toInt))
         }
-        println(result(0))
-        result(0)
+        val updatedTicket = result(0)
+        println(updatedTicket)
+        classifierHub ! CamelMessage(updatedTicket, Map(CamelMessage.MessageExchangeId → "NewTicketWithProbability"))
+        updatedTicket
       }
     }
 
@@ -43,4 +45,8 @@ class Classifier(sparkContext: SparkContext, sparkSession: SparkSession) extends
 
   }
 
+}
+
+class ClassifierHub extends Producer with Oneway {
+  override def endpointUri: String = "activemq:topic:Ticket.Receiver"
 }
