@@ -8,6 +8,7 @@ import models.{ BuildModelRequest, Ticket }
 import org.apache.activemq.camel.component.ActiveMQComponent
 import org.apache.spark.ml.tuning.CrossValidatorModel
 import net.ceedubs.ficus.Ficus._
+import org.apache.spark.SparkContext
 import trainer.{ ModelBuilder, ModelBuilderHub }
 import utils.SparkModule._
 

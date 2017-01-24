@@ -18,6 +18,7 @@ lazy val versions = new {
   val ficus = "1.2.6"
   val slf4j = "1.7.16"
   val logback = "1.1.3"
+  val guice = "4.1.0"
 }
 
 lazy val commonSettings = Seq(
@@ -41,7 +42,12 @@ lazy val commonSettings = Seq(
     .setPreference(IndentSpaces, 2)
     .setPreference(IndentLocalDefs, false)
     .setPreference(SpacesWithinPatternBinders, true)
-    .setPreference(SpacesAroundMultiImports, true)
+    .setPreference(SpacesAroundMultiImports, true),
+  excludeFilter in scalariformFormat := (excludeFilter in scalariformFormat).value ||
+    "Routes.scala" ||
+    "ReverseRoutes.scala" ||
+    "JavaScriptReverseRoutes.scala" ||
+    "RoutesPrefix.scala"
 )
 
 lazy val SubsistemDisposisiOtomatis = (project in file("."))
@@ -64,7 +70,8 @@ lazy val SubsistemDisposisiOtomatis = (project in file("."))
       "org.postgresql" % "postgresql" % versions.psqlJdbc,
       "com.iheart" %% "ficus" % versions.ficus,
       "org.slf4j" % "slf4j-api" % versions.slf4j,
-      "ch.qos.logback" % "logback-classic" % versions.logback
+      "ch.qos.logback" % "logback-classic" % versions.logback,
+      "net.codingwell" %% "scala-guice" % versions.guice
     ).map(_.exclude("org.slf4j", "slf4j-log4j12"))
   ).enablePlugins(SbtScalariform)
 
@@ -72,7 +79,8 @@ lazy val jvmOptions = Seq(
   "-Xms256M",
   "-Xmx2G",
   "-XX:MaxPermSize=2048M",
-  "-XX:+UseConcMarkSweepGC"
+  "-XX:+UseConcMarkSweepGC",
+  "-Dorg.apache.activemq.SERIALIZABLE_PACKAGES=*"
 )
 
 lazy val scalaCompilerOptions = Seq(
