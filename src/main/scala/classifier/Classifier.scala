@@ -1,5 +1,7 @@
 package classifier
 
+import java.time.OffsetDateTime
+
 import akka.actor.{ Actor, ActorRef, Props }
 import akka.actor.Actor.Receive
 import akka.camel.{ CamelMessage, Consumer, Oneway, Producer }
@@ -33,7 +35,8 @@ class Classifier(sparkContext: SparkContext, sparkSession: SparkSession, classif
             TicketProbability(ticket.copy(assignee = Some(predictionLabel)), probability.values(prediction.toInt))
         }
         val updatedTicket = result(0)
-        println(updatedTicket)
+        // println(OffsetDateTime.now())
+        // println(updatedTicket)
         classifierHub ! CamelMessage(updatedTicket, Map(CamelMessage.MessageExchangeId → "NewTicketWithProbability"))
         updatedTicket
       }
