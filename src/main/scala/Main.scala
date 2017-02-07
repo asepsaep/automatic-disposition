@@ -9,7 +9,7 @@ import org.apache.activemq.camel.component.ActiveMQComponent
 import org.apache.spark.ml.tuning.CrossValidatorModel
 import net.ceedubs.ficus.Ficus._
 import org.apache.spark.SparkContext
-import trainer.{ ModelBuilder, ModelBuilderHub }
+import trainer.{ BuildLogger, ModelBuilder, ModelBuilderHub }
 import utils.SparkModule._
 
 object Main extends App {
@@ -21,7 +21,8 @@ object Main extends App {
   System.setProperty("org.apache.activemq.SERIALIZABLE_PACKAGES", "*")
 
   val modelBuilderHub = system.actorOf(Props[ModelBuilderHub])
-  val modelBuilder = system.actorOf(ModelBuilder.props(sparkContext, sparkSession, modelBuilderHub))
+  val buildLogger = system.actorOf(Props[BuildLogger])
+  val modelBuilder = system.actorOf(ModelBuilder.props(sparkContext, sparkSession, modelBuilderHub, buildLogger))
 
   val classifierHub = system.actorOf(Props[ClassifierHub])
   val classifier = system.actorOf(Classifier.props(sparkContext, sparkSession, classifierHub))
