@@ -27,6 +27,7 @@ class Classifier(sparkContext: SparkContext, sparkSession: SparkSession, classif
 
   override def receive = {
     case event: CamelMessage if event.headers(CamelMessage.MessageExchangeId) == "NewTicket" ⇒ {
+      println("[Classifier] Received Event New Ticket from External System")
       val ticket = event.bodyAs[Ticket]
       model.fold { TicketProbability(ticket, 0.0) } { classifier ⇒
         val testData = sqlContext.createDataFrame(Seq(ticket.toTicketSummary)).toDF()
@@ -35,14 +36,16 @@ class Classifier(sparkContext: SparkContext, sparkSession: SparkSession, classif
             TicketProbability(ticket.copy(assignee = Some(predictionLabel)), probability.values(prediction.toInt))
         }
         val updatedTicket = result(0)
-        // println(OffsetDateTime.now())
-        // println(updatedTicket)
+        println(OffsetDateTime.now())
+        println(updatedTicket)
+        println("[Event New Ticket] Classifier -> Ticket Management")
         classifierHub ! CamelMessage(updatedTicket, Map(CamelMessage.MessageExchangeId → "NewTicketWithProbability"))
         updatedTicket
       }
     }
 
     case event: CamelMessage if event.headers(CamelMessage.MessageExchangeId) == "NewModel" ⇒ {
+      println("[Classifier] Received Event ModelBuilt from ModelBuilder")
       model = Some(event.bodyAs[Transformer])
     }
 

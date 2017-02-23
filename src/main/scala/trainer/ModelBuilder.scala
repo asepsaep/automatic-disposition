@@ -44,15 +44,19 @@ class ModelBuilder(
 
   override def receive = {
     case event: CamelMessage if event.headers(CamelMessage.MessageExchangeId) == "Build" ⇒ {
+      println("[ModelBuilder] Received Event Build Model Request")
       val dataset = initializeDataset(BuildMode(manual = false, id = None))
       val model = buildModel(dataset, BuildMode(manual = false, id = None))
+      println("[ModelBuilt Event] ModelBuilder -> Classifier")
       modelBuilderHub ! CamelMessage(model, Map(CamelMessage.MessageExchangeId → "NewModel"))
     }
 
     case event: CamelMessage if event.headers(CamelMessage.MessageExchangeId) == "ManualBuildModel" ⇒ {
+      println("[ModelBuilder] Received Event Build Model Request from User")
       val buildSessionId = event.bodyAs[Long]
       val dataset = initializeDataset(BuildMode(manual = true, id = Option(buildSessionId)))
       val model = buildModel(dataset, BuildMode(manual = true, id = Option(buildSessionId)))
+      println("[ModelBuilt Event] ModelBuilder -> Classifier")
       modelBuilderHub ! CamelMessage(model, Map(CamelMessage.MessageExchangeId → "NewModel"))
     }
 
