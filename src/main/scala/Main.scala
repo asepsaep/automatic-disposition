@@ -31,17 +31,31 @@ object Main extends App {
   val ticketSender = system.actorOf(Props[TicketSender])
 
   val config: Config = ConfigFactory.load()
-  val modelPath = config.as[String]("model.path")
+  val modelPath = config.as[String]("model.basePath")
 
   Thread.sleep(1000)
 
-  if (new File(modelPath).exists()) {
-    val model = CrossValidatorModel.read.load(modelPath)
-    modelBuilderHub ! CamelMessage(model.bestModel, Map(CamelMessage.MessageExchangeId → "NewModel"))
-    Thread.sleep(1000)
-  } else {
-    buildproducer ! CamelMessage(BuildModelRequest(), Map(CamelMessage.MessageExchangeId → "Build"))
-    Thread.sleep(60000)
+  while (true) {
+    print("\nEnter command: ")
+    val command = scala.io.StdIn.readLine()
+    if (command == "build") {
+      buildproducer ! CamelMessage(BuildModelRequest(), Map(CamelMessage.MessageExchangeId → "Build"))
+      Thread.sleep(60000)
+    } else if (command == "load") {
+      print("\nEnter path: ")
+      val path = scala.io.StdIn.readLine()
+      if (new File(modelPath + "/" + path).exists()) {
+        val model = CrossValidatorModel.read.load(modelPath + "/" + path)
+        modelBuilderHub ! CamelMessage(model.bestModel, Map(CamelMessage.MessageExchangeId → "NewModel"))
+        Thread.sleep(1000)
+      } else {
+        println("Path doesn't exist")
+      }
+    } else if (command == "algo") {
+      print("\nEnter algorithm: ")
+      val algorithm = scala.io.StdIn.readLine()
+      buildproducer ! CamelMessage(algorithm, Map(CamelMessage.MessageExchangeId → "Algorithm"))
+    }
   }
 
   //  val ticket = Ticket(

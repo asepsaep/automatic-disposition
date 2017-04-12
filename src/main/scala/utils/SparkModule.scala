@@ -1,6 +1,7 @@
 package utils
 
 import com.typesafe.config.{ Config, ConfigFactory }
+import org.apache.log4j.{ Level, Logger }
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.{ SparkConf, SparkContext }
 
@@ -16,6 +17,9 @@ object SparkModule {
     .set("spark.logConf", config.as[String]("spark.log"))
     .set("spark.driver.host", config.as[String]("spark.host"))
     .set("spark.driver.port", config.as[String]("spark.port"))
+
+  val rootLogger = Logger.getRootLogger()
+  rootLogger.setLevel(Level.OFF)
 
   val sparkContext = SparkContext.getOrCreate(sparkConf)
 

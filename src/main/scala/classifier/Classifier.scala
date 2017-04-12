@@ -1,6 +1,6 @@
 package classifier
 
-import java.time.OffsetDateTime
+import java.time.{ LocalTime, OffsetDateTime }
 
 import akka.actor.{ Actor, ActorRef, Props }
 import akka.actor.Actor.Receive
@@ -27,6 +27,7 @@ class Classifier(sparkContext: SparkContext, sparkSession: SparkSession, classif
 
   override def receive = {
     case event: CamelMessage if event.headers(CamelMessage.MessageExchangeId) == "NewTicket" ⇒ {
+      println("\n" + LocalTime.now)
       println("[Classifier] Received Event New Ticket from External System")
       val ticket = event.bodyAs[Ticket]
       model.fold { TicketProbability(ticket, 0.0) } { classifier ⇒
@@ -36,7 +37,6 @@ class Classifier(sparkContext: SparkContext, sparkSession: SparkSession, classif
             TicketProbability(ticket.copy(assignee = Some(predictionLabel)), probability.values(prediction.toInt))
         }
         val updatedTicket = result(0)
-        println(OffsetDateTime.now())
         println(updatedTicket)
         println("[Event New Ticket] Classifier -> Ticket Management")
         classifierHub ! CamelMessage(updatedTicket, Map(CamelMessage.MessageExchangeId → "NewTicketWithProbability"))
@@ -45,6 +45,7 @@ class Classifier(sparkContext: SparkContext, sparkSession: SparkSession, classif
     }
 
     case event: CamelMessage if event.headers(CamelMessage.MessageExchangeId) == "NewModel" ⇒ {
+      println("\n" + LocalTime.now)
       println("[Classifier] Received Event ModelBuilt from ModelBuilder")
       model = Some(event.bodyAs[Transformer])
     }

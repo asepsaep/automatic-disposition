@@ -55,7 +55,7 @@ lazy val SubsistemDisposisiOtomatis = (project in file("."))
   .settings(commonSettings: _*)
   .settings(
     name := "subsistem-disposisi-otomatis",
-    fork in run := true,
+    fork in run := false,
     connectInput in run := true,
     libraryDependencies ++= Seq(
       "com.typesafe.akka" %% "akka-actor" % versions.akka,
